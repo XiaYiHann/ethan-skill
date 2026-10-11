@@ -4,6 +4,10 @@ Agent skills I use for real work. Plain Markdown, no framework, and easy to cut 
 
 They are small on purpose: a skill is a checklist a good colleague would hand you, not a process that takes over the keyboard. Adapt them, fork them, delete the parts you disagree with.
 
+![A three-card framework figure with native draw.io labels](./assets/imagegen-to-drawio-preview.png)
+
+*Output of [`imagegen-to-drawio`](./skills/visuals/imagegen-to-drawio/SKILL.md): the module plate is generated artwork, while the heading, card labels, and arrows are native, movable draw.io objects.*
+
 ## Install
 
 Pick one route per agent. Installing two gives you every skill twice.
@@ -57,6 +61,12 @@ Or clone once and run `scripts/link-skills.sh`, which symlinks every skill in th
 
 ## Skills
 
+### Research
+
+**Model-invoked**: you can type them, and the agent can also reach for them when the task fits.
+
+- **[rank-my-paper](./skills/research/rank-my-paper/SKILL.md)**: Compare a finished manuscript against up to seven officially accepted same-domain peers, reviewed independently under a shared rubric, and return an evidence-bound ranking with revision priorities.
+
 ### Visuals
 
 **Model-invoked**: you can type them, and the agent can also reach for them when the task fits.
@@ -67,16 +77,17 @@ Or clone once and run `scripts/link-skills.sh`, which symlinks every skill in th
 
 ```text
 skills/<bucket>/<skill>/    the skills themselves, one folder each
+assets/                     images the READMEs reference
 .claude-plugin/             plugin and marketplace manifests (what installers read)
 scripts/                    validate_skills.py, link-skills.sh, list-skills.sh
 ```
 
-Buckets describe maturity, not topic: promoted buckets ship in the plugin, `misc/`, `in-progress/`, and `deprecated/` do not. [AGENTS.md](./AGENTS.md) has the full rules.
+Each skill sits in a topical bucket: `research/`, `visuals/`, and later `engineering/` or `productivity/`. Those buckets ship in the plugin. `in-progress/`, `misc/`, and `deprecated/` hold skills by maturity instead, and never ship. [AGENTS.md](./AGENTS.md) has the full rules.
 
 ## Adding or changing a skill
 
 1. Edit `skills/<bucket>/<skill>/SKILL.md` (plus any `references/*.md` it links to).
-2. Update the skill list in the top-level `README.md`, the bucket `README.md`, and `.claude-plugin/plugin.json` if the skill is promoted.
+2. Update the skill list in the top-level `README.md`, the bucket `README.md`, and `.claude-plugin/plugin.json`.
 3. Run `python3 scripts/validate_skills.py`. It fails on drift between the manifests, the READMEs, and the files on disk.
 4. Add a `CHANGELOG.md` entry and bump `version` in `.claude-plugin/plugin.json`.
 

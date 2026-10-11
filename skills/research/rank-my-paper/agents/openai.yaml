@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rank My Paper"
+  short_description: "Compare against up to 7 accepted same-domain peers"
+  default_prompt: "Use $rank-my-paper for the default 8-record comparison: my manuscript plus up to 7 officially accepted same-domain CCF-A/B or verified top-domain peers, with fewer if the evidence-qualified peer set is smaller."

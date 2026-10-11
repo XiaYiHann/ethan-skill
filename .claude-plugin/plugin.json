@@ -1,7 +1,7 @@
 {
   "name": "ethan-skill",
-  "version": "0.1.0",
-  "description": "Ethan's agent skills: figure and diagram production, and the everyday engineering workflows around them.",
+  "version": "0.2.0",
+  "description": "Ethan's agent skills: manuscript benchmarking, figure and diagram production, and the workflows around them.",
   "author": {
     "name": "Ethan",
     "url": "https://github.com/XiaYiHann"
@@ -11,12 +11,15 @@
   "license": "MIT",
   "keywords": [
     "skills",
+    "research",
+    "paper-review",
     "drawio",
     "diagrams",
     "figures",
     "imagegen"
   ],
   "skills": [
+    "./skills/research/rank-my-paper",
     "./skills/visuals/imagegen-to-drawio"
   ]
 }
