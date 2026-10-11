@@ -1,0 +1,23 @@
+{
+  "name": "ethan",
+  "owner": {
+    "name": "Ethan",
+    "url": "https://github.com/XiaYiHann"
+  },
+  "description": "Ethan's agent skills, as an installable plugin.",
+  "plugins": [
+    {
+      "name": "ethan-skill",
+      "source": "./",
+      "description": "Agent skills for figures, diagrams, and everyday engineering work.",
+      "category": "visuals",
+      "keywords": [
+        "skills",
+        "drawio",
+        "diagrams",
+        "figures",
+        "imagegen"
+      ]
+    }
+  ]
+}

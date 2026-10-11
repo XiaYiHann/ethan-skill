@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Scope of this repo
+    url: https://github.com/XiaYiHann/ethan-skill/blob/main/SCOPE.md
+    about: What counts as a useful report or idea here, before you open one.

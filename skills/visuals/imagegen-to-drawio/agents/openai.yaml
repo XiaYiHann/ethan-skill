@@ -1,0 +1,4 @@
+interface:
+  display_name: "ImageGen to draw.io"
+  short_description: "Build draw.io figures from text-free module artwork"
+  default_prompt: "Use $imagegen-to-drawio to generate separate text-free backgrounds for each module, assemble them with editable labels and bound connectors in draw.io, and verify the editor and export while preserving any existing editing contract."

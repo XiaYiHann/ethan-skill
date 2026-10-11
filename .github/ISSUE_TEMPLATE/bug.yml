@@ -1,0 +1,36 @@
+name: Skill did not work
+description: A skill produced something wrong, or did not fire when it should have.
+labels: [bug]
+body:
+  - type: input
+    id: skill
+    attributes:
+      label: Skill
+      description: The skill folder name, for example imagegen-to-drawio.
+    validations:
+      required: true
+  - type: textarea
+    id: asked
+    attributes:
+      label: What you asked for
+      description: Your prompt, and any file you pointed the agent at.
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: What the agent actually did, including the part that was wrong.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and model
+      description: For example Claude Code with Sonnet, or Codex with GPT-5.
