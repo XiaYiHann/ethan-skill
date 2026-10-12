@@ -36,6 +36,10 @@ To (re)link every skill outside `deprecated/` and `misc/` into the local harness
 - Scripts a skill ships live in its own `scripts/`, take arguments rather than environment assumptions, and keep their tests next to them. A skill's scripts must run from a clean checkout with the standard library of the language they are written in, plus anything the skill itself documents.
 - Every `SKILL.md` in `deprecated/` keeps its content; do not delete history to tidy up.
 
+## Optional skill-standard metadata
+
+A skill may also carry `manifest.json` (owner, version, review cadence, maturity tier, target platforms) and `agents/interface.yaml` (activation, execution, trust, and degradation contract). Add them when the skill is audited against the Yao skill standard; keep the `name` and `version` fields in step with the frontmatter and the plugin manifest. Codex reads `agents/openai.yaml`, so a skill that ships both keeps the `interface` block identical in the two files.
+
 ## Portability and privacy
 
 Skills in this repo are public and shared across machines. They must not contain:

@@ -1,0 +1,24 @@
+interface:
+  display_name: "DARPA Review"
+  short_description: "Heilmeier eight-question audit of current work"
+  default_prompt: "Use $darpa to run the Heilmeier Catechism over this workspace's current state, then reply with the eight answers."
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "generic"
+  activation:
+    mode: "mixed"
+    paths: []
+  execution:
+    context: "inline"
+    shell: "bash"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "metadata-adapter"
+    claude: "neutral-source-plus-adapter"
+    generic: "neutral-source"

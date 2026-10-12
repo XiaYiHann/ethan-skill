@@ -2,6 +2,16 @@
 
 Notable changes to the skills in this repo. Versions track `.claude-plugin/plugin.json`.
 
+## 0.3.0
+
+### Added
+
+- `darpa`: run the Heilmeier Catechism over the current work and answer the eight questions, ending in falsifiable mid-term and final exams. Ships a portable interface contract, governance metadata, and a trigger-eval pack.
+
+### Changed
+
+- `darpa` was audited against the Yao skill standard before publication: the body was split into `references/` (estimated initial load 1128 to 730 tokens), the description was rewritten (trigger recall 0.833 to 0.917), and its coupling to a local-only workflow was made conditional.
+
 ## 0.2.0
 
 ### Added

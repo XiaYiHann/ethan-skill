@@ -1,0 +1,142 @@
+{
+  "recommended_threshold": 0.33,
+  "negative_patterns": [
+    "解释一下",
+    "只要总结",
+    "翻译",
+    "头脑风暴",
+    "不要评审",
+    "不用审",
+    "随便聊聊",
+    "介绍一下",
+    "just explain",
+    "summarize only",
+    "no review needed"
+  ],
+  "should_trigger": [
+    {
+      "text": "用海尔迈耶之问审一下我现在的进展",
+      "family": "darpa_explicit"
+    },
+    {
+      "text": "/darpa 审一下这个实验，别粉饰",
+      "family": "darpa_explicit"
+    },
+    {
+      "text": "跑一遍 DARPA 八问，看看这个项目值不值得继续",
+      "family": "darpa_explicit"
+    },
+    {
+      "text": "Run a Heilmeier Catechism review over this project's current state.",
+      "family": "darpa_explicit"
+    },
+    {
+      "text": "帮我把这个工作按 DARPA 标准拷问一遍",
+      "family": "harsh_review"
+    },
+    {
+      "text": "审一下当前工作区，按海尔迈耶的问题给出严苛评估",
+      "family": "harsh_review"
+    },
+    {
+      "text": "我这个 idea 到底行不行？用海尔迈耶八问评估一下",
+      "family": "harsh_review"
+    },
+    {
+      "text": "Give me an honest Heilmeier review of this repo's progress.",
+      "family": "harsh_review"
+    },
+    {
+      "text": "严格审视：这个实验是不是自嗨，我们要不要继续投算力",
+      "family": "go_no_go"
+    },
+    {
+      "text": "评估当前算法项目的风险、成本和里程碑",
+      "family": "go_no_go"
+    },
+    {
+      "text": "write the Heilmeier review reply for this experiment",
+      "family": "go_no_go"
+    },
+    {
+      "text": "这个方向的真实价值是什么？谁会真的在乎？成本多少？",
+      "family": "go_no_go"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "解释一下什么是海尔迈耶之问",
+      "family": "explain_only"
+    },
+    {
+      "text": "给我讲讲 DARPA 这个机构是干什么的",
+      "family": "explain_only"
+    },
+    {
+      "text": "总结一下当前的进展",
+      "family": "summarize_only"
+    },
+    {
+      "text": "把这段翻译成英文",
+      "family": "translate_only"
+    },
+    {
+      "text": "帮我想几个新方向的 idea",
+      "family": "brainstorm_only"
+    },
+    {
+      "text": "看看这段代码有没有 bug",
+      "family": "code_debug"
+    },
+    {
+      "text": "写个 README",
+      "family": "doc_task"
+    },
+    {
+      "text": "跑一下测试看看过没过",
+      "family": "test_run"
+    },
+    {
+      "text": "把八问写进文档里，不要评审",
+      "family": "doc_task"
+    },
+    {
+      "text": "帮我查一下 vLLM 的 KV cache 参数怎么设",
+      "family": "fact_lookup"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "grill me about this plan until every branch of the design tree is resolved",
+      "family": "grilling"
+    },
+    {
+      "text": "帮我压力测试一下这个设计，一直追问到没有未决分支",
+      "family": "grilling"
+    },
+    {
+      "text": "把这个 idea 变成研究 spec，带上依赖 ticket 图",
+      "family": "research_idea"
+    },
+    {
+      "text": "为什么这个实验结果和基线不一致？帮我定位根因",
+      "family": "academic_debugging"
+    },
+    {
+      "text": "帮我把这篇论文和同领域已录取论文排个名",
+      "family": "rank_my_paper"
+    },
+    {
+      "text": "帮我把这段论文改得更学术一些",
+      "family": "academic_writing"
+    },
+    {
+      "text": "review this PR diff against the repo standards",
+      "family": "code_review"
+    },
+    {
+      "text": "summarize what changed in this repo this week",
+      "family": "summary"
+    }
+  ]
+}

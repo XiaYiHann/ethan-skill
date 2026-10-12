@@ -1,0 +1,24 @@
+{
+  "name": "darpa",
+  "version": "1.0.0",
+  "owner": "XiaYiHann",
+  "updated_at": "2026-10-12",
+  "review_due": "2027-01-12",
+  "status": "active",
+  "maturity_tier": "production",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "skill_archetype": "review",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "agent-skills-compatible",
+    "generic"
+  ],
+  "factory_components": [
+    "references",
+    "evals",
+    "reports"
+  ]
+}

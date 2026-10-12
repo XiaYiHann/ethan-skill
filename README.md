@@ -66,6 +66,7 @@ Or clone once and run `scripts/link-skills.sh`, which symlinks every skill in th
 **Model-invoked**: you can type them, and the agent can also reach for them when the task fits.
 
 - **[rank-my-paper](./skills/research/rank-my-paper/SKILL.md)**: Compare a finished manuscript against up to seven officially accepted same-domain peers, reviewed independently under a shared rubric, and return an evidence-bound ranking with revision priorities.
+- **[darpa](./skills/research/darpa/SKILL.md)**: Put the current work through the Heilmeier Catechism: eight hard questions on value, risk, cost, and milestones, ending in falsifiable mid-term and final exams. Written in Chinese.
 
 ### Visuals
 

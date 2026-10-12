@@ -1,0 +1,186 @@
+{
+  "optimizer_hints": {
+    "capability": "按海尔迈耶八问严苛审查当前工作/实验，给出价值、风险、成本、里程碑与可证伪考试",
+    "inputs": [
+      "current workspace state",
+      "experiment logs",
+      "research progress",
+      "当前工作区",
+      "实验进展",
+      "项目现状"
+    ],
+    "trigger_actions": [
+      "run the Heilmeier Catechism",
+      "review the current work harshly",
+      "audit research viability",
+      "decide whether to continue",
+      "用海尔迈耶八问评估",
+      "严苛审查当前工作",
+      "评估值不值得继续",
+      "拷问这个 idea"
+    ],
+    "exclusions": [
+      "explain-only requests",
+      "summary-only requests",
+      "translation",
+      "brainstorming",
+      "单点代码调试",
+      "论文排名",
+      "改写润色"
+    ],
+    "artifacts": [
+      "eight-question review reply",
+      "八问回复",
+      "falsification criteria",
+      "里程碑与考试"
+    ]
+  },
+  "fallback_positive_concepts": [
+    "heilmeier_review",
+    "harsh_evaluation",
+    "go_no_go"
+  ],
+  "positive_concepts": {
+    "heilmeier_review": {
+      "weight": 0.36,
+      "phrases": [
+        "海尔迈耶",
+        "海尔迈耶之问",
+        "海尔迈耶八问",
+        "heilmeier",
+        "heilmeier catechism",
+        "darpa 八问",
+        "darpa八问",
+        "八问",
+        "darpa review",
+        "/darpa",
+        "darpa"
+      ]
+    },
+    "harsh_evaluation": {
+      "weight": 0.26,
+      "phrases": [
+        "严苛",
+        "严苛评估",
+        "拷问",
+        "审一遍",
+        "审计",
+        "审视",
+        "别粉饰",
+        "不要粉饰",
+        "严厉",
+        "harsh review",
+        "critical review",
+        "honest review",
+        "scrutinize",
+        "审一下",
+        "评估一下"
+      ]
+    },
+    "go_no_go": {
+      "weight": 0.24,
+      "phrases": [
+        "值不值得",
+        "要不要继续",
+        "要不要投算力",
+        "该不该做",
+        "viability",
+        "go no go",
+        "go/no-go",
+        "风险",
+        "成本",
+        "里程碑",
+        "考试",
+        "反证",
+        "谁会真的在乎",
+        "真实价值",
+        "项目方向",
+        "是否成立"
+      ]
+    },
+    "current_work_scope": {
+      "weight": 0.14,
+      "phrases": [
+        "当前工作",
+        "当前进展",
+        "工作区",
+        "实验",
+        "项目现状",
+        "这个工作",
+        "这个 idea",
+        "这个方向",
+        "this project",
+        "this experiment",
+        "current state",
+        "progress"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "explain_only": {
+      "weight": 0.26,
+      "exclusive": true,
+      "phrases": [
+        "解释一下",
+        "讲解",
+        "什么是",
+        "干什么的",
+        "什么意思",
+        "just explain",
+        "explain what"
+      ]
+    },
+    "summarize_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "总结一下",
+        "总结",
+        "概括",
+        "简单总结",
+        "summarize",
+        "summary",
+        "recap"
+      ]
+    },
+    "translate_only": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "翻译",
+        "译成",
+        "translate",
+        "into english",
+        "into chinese"
+      ]
+    },
+    "brainstorm_only": {
+      "weight": 0.24,
+      "exclusive": true,
+      "phrases": [
+        "头脑风暴",
+        "想几个",
+        "给点想法",
+        "brainstorm",
+        "ideas"
+      ]
+    },
+    "adjacent_single_purpose": {
+      "weight": 0.22,
+      "exclusive": true,
+      "phrases": [
+        "bug",
+        "报错",
+        "定位根因",
+        "排个名",
+        "改得更学术",
+        "润色",
+        "改写措辞",
+        "review this pr",
+        "diff",
+        "参数怎么设",
+        "跑一下测试"
+      ]
+    }
+  }
+}

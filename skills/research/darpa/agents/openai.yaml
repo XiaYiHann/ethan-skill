@@ -1,0 +1,4 @@
+interface:
+  display_name: "DARPA Review"
+  short_description: "Heilmeier eight-question audit of current work"
+  default_prompt: "Use $darpa to run the Heilmeier Catechism over this workspace's current state, then reply with the eight answers."
