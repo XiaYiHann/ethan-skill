@@ -31,6 +31,7 @@ To (re)link every skill outside `deprecated/` and `misc/` into the local harness
 
 - YAML frontmatter with `name` (identical to the folder name) and `description`.
 - `description` says what the skill does and when to reach for it, third person, including the phrases a user or model would actually say. It is the only thing an agent sees before loading the skill, so vague descriptions mean the skill never fires.
+- `name` is the handle a user types, so prefer the short memorable name over the descriptive one (`darpa`, not `heilmeier-catechism`); carry the formal method name in the `description` so discovery and routing still find it. Renames cost every user their muscle memory, so only pay for one when the old name is actively wrong.
 - A skill is either model-invoked (default) or user-invoked: `disable-model-invocation: true` in the frontmatter plus `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. User-invoked skills orchestrate; model-invoked skills hold reusable discipline.
 - Keep `SKILL.md` short and put detail in sibling files under `references/`, linked by relative path. A skill that must be read in full before it does anything is a document, not a skill.
 - Scripts a skill ships live in its own `scripts/`, take arguments rather than environment assumptions, and keep their tests next to them. A skill's scripts must run from a clean checkout with the standard library of the language they are written in, plus anything the skill itself documents.
