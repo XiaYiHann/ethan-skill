@@ -1,37 +1,37 @@
 ---
 name: rank-my-paper
-description: >-
-  基于学术会议 Area Chair (AC) 与 10 个 Reviewer Sub-Agents 的两轮 Bidding 分配机制，从近 3 年候选文献池中严格筛选并分配 8 篇核心同领域已录用对比论文（默认 8 条记录，含目标手稿；如需全量规模须显式传 --target-papers 15），并发独立全文精读评审，由 AC 汇总成对关系生成证据绑定的排位基准 (ranking.json) 并提炼 Related Work 对标矩阵 (related_work_brief.md)。仅用于已完成手稿的同行盲排对标与相关工作对标支持；不用于日常文献综述或论文修改。
-metadata:
-  category: research-benchmarking
-  tags: [paper, ranking, benchmarking, bidding, peer-review, related-work]
-  version: "3.4.0"
-  last_updated: "2026-10-13"
-allowed-tools: Read, Glob, Grep, Bash, Edit, Write
+description: Benchmark and rank a completed manuscript against stratified published/accepted peers (CCF-A, CCF-B, or top domain venues) using independent full-text reviews, multi-dimensional quality bands (soundness, novelty, impact), and an evidence-bound comparison. Use for explicit paper benchmarking; not for ordinary related-work summaries or manuscript editing.
 ---
 
-# Rank My Paper：基于 AC 两轮 Bidding 的同行盲排基准
+# Rank My Paper
 
-主 Agent 扮演 **Area Chair (AC)**，调度 **10 个 Reviewer Sub-Agents**：两轮 Bidding（粗筛竞价 ➔ 二分图匹配）选拔近 3 年核心对比论文并负载均衡（3 篇/人、2 人/篇），并发精读并汇总成对关系。详见 [workflow details](references/workflow-details.md)。
+Compare a completed manuscript against a carefully selected set of accepted, same-domain peer papers and return an evidence-bound comparison: eight ranked records by default (the target plus up to seven peers), independent reviews with shared-rubric quality scores and multi-dimensional value profiles (soundness, novelty, practical impact), a target rank or rank interval, and revision priorities. Use fewer peers when the eligible same-domain literature is smaller; never pad. Scores inform the comparison; they are not conference recommendations or acceptance probabilities. Proximity selects peers; demonstrated contribution and evidence decide comparisons.
 
-**委派**：一手检索 ➔ `/research`；术语 ➔ `/domain-modeling`；发表态精修 ➔ `/acceptance-polish`；快照存盘 ➔ `/paper-shelf`。
+Read [references/review-protocol.md](references/review-protocol.md) first: it defines what “objective” means here, and fixes the candidate gate, the reading and waiver rules, the ordinal contract, the report contract, the JSON schema, and the audit gate. Reader prompts: [references/reader-agent-prompt.md](references/reader-agent-prompt.md).
 
-## 工作流骨架 (5-Step)
+## Contract
 
-1. **分析目标手稿**：提取根问题/机制/边界，锁定路径与 hash；差量预算用 `scripts/diff_runs.py`。
-2. **两轮 Bidding 分配**：运行 `scripts/bidding_assigner.py` 匹配（默认 8 篇，全量 15 篇加 `--target-papers 15`；近 3 年门禁）。
-3. **并发独立评审**：Reviewer Sub-Agents 精读全文，执行内部自洽性验算（表格重算与宣称对照）与硬闸检查（匿名/合规），输出独立报告。
-4. **AC 汇总裁决与文献提炼**：执行硬闸熔断（`hard_gate_vetoed`）；汇总成对关系与排位并写 `review.md`；调用 `scripts/generate_related_work_brief.py` 提炼同行聚类、差异矩阵与 LaTeX/BibTeX。
-5. **确定性门禁**：运行 `scripts/validate_ranking.py <manuscript>/rank_my_paper/ranking.json` 须 0 failure（含硬闸熔断与自洽性）。
+- Read the manuscript completely and record the same evidence profile and anchors used for peers; check available supplements when a decisive claim depends on them.
+- Independently review every core paper, including the target: exactly one fresh reader per paper not covered by a reusable peer review. Set and log that exact dispatch budget before launch; readers are leaf agents and do not spawn reviewers, auditors, or critics. No extra agent pass reviews the readers or their synthesis. Readers receive no other papers, prior scores, target identity, or desired outcome. Freeze returned profiles and scores before ranking; see the protocol for the single bounded same-reader follow-up.
+- A paper whose official full text is unobtainable leaves the core for `adjacent_papers`, unless the user grants the waiver — then it is capped at `confidence: "low"` and the run reports a rank interval. Never self-grant it.
+- Default 8 ranked records including the target, so select up to 7 peers; honor an explicit `N` only when enough eligible peers exist, and rank fewer rather than padding. Stratify peers when possible into `sota_ceiling` (frontier), `median_accepted` (benchmark), and `marginal_pass` (boundary).
+- Every peer must be an officially accepted/published paper (including verified pre-proceedings acceptance at flagship venues) in the target's same research domain and pass the frozen venue gate. Default to `domain_peer` (CCF-A/B or an officially verified top venue in the target's field); `any_ccf_a` and `ccf_ab` remain selectable. Venue tier never substitutes for same-domain fit.
+- Never modify the manuscript, bibliography, ledger, or code; write only under `<manuscript-directory>/rank_my_paper/`.
+- No experiments, training, or installs; read-only inspection and web retrieval only.
 
-默认策略：Default 8 ranked records including the target；Default to `domain_peer`（CCF-A/B 或同领域旗舰）；近 3 年已录用同行工作。
+## Workflow
 
-**输出契约**：`<manuscript>/rank_my_paper/` 下 `ranking.json`、`review.md` 与 `related_work_brief.md`；门禁见 Step 5。
+1. Freeze scope: manuscript path and hash, venue and track, venue policy, comparison basis, CCF edition, publication cutoff, rank size, reading policy, rubric version, output directory. If a previous run exists, carry its peer set forward by default (protocol §2.1).
+2. Profile the target: root question, task, evaluation object, mechanism, setting, demonstrated contribution, closest cited work, strongest alternative explanation. Freeze this evidence profile before assigning relations.
+3. Fresh search only (first run or explicit request): search a pool of at least 3x the requested peer count (ranked count minus the target), stratifying across anchor tiers (SOTA ceiling, median accepted, marginal pass) when the literature supports it; deduplicate and freeze each candidate's domain-fit and inclusion reason before judging quality. This discovery pool is not a review budget.
+4. Gate each core candidate on same-domain fit, an official accepted/publication record (or verified pre-proceedings acceptance), and a venue classification meeting the frozen policy; keep cross-domain or unverified candidates adjacent instead of ranking them.
+5. Dispatch only the precomputed reader budget under the shared rubric (§4.1); preserve each reader's reading evidence and independent review (including optional novelty and impact bands) verbatim, then apply the reading gate.
+6. Compare supported contributions on a shared basis using evidence from both papers. Set `above`, `below`, or `unresolved` (default `unresolved` when scores share a band, or explain trade-offs via Pareto co-frontier analysis); give the decisive evidence, strongest counterargument, and reason for any ordering that contradicts the independent scores.
+7. Derive the target position from these relations (§4). Unresolved or waived comparisons require a rank interval and null point ranks.
+8. Write `review.md`, `ranking.json`, `sources.md`; run `scripts/validate_ranking.py` and require exit 0; for re-runs include `scripts/diff_runs.py` output separating manuscript change from peer-set change; recheck the manuscript hash and protected paths.
 
-## 边界与评测
+## Evidence discipline
 
-- **Do not use for**：日常开题调研 ➔ `/research`；正文修改或实验重跑 ➔ `/acceptance-polish`、`/research-loop`；绝不改动手稿目录外文件。
-- **评测**：用例 `evals/eval_cases.json`、基线 `evals/history/baseline_eval.json`；`pytest tests`。
+Judge the target as written and references from the full text their readers returned. Cite target claims to sections or pages, and reference claims to a full-text URL plus anchor locator; an abstract-level claim belongs in the uncertainty section, not in a relation. For the target use claim → evidence → assumption → strongest alternative → confidence, and treat a positive result, a null result, an interval crossing zero, and a missing measurement as different states.
 
-**Reference Map**：`references/`（workflow-details、ac-bidding-protocol、review-protocol、reader-agent-prompt）、`scripts/`（bidding_assigner、validate_ranking、diff_runs、generate_related_work_brief）、`tests/`。
-
+A high or low rank must survive the same scrutiny. Do not tune the output toward praise, rejection, or a previous review. Historical results concern their recorded revisions; write new runs separately.

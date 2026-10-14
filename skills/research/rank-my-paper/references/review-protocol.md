@@ -10,7 +10,6 @@ Record these fields at the top of the run and in `sources.md`:
 
 - manuscript path, file type, revision hash, and read date;
 - target venue or track, target field, and publication cutoff;
-- recency window: 3 years (default: strictly papers published within `target_year - 3` to `target_year` are eligible for the core comparator cohort);
 - comparator venue policy: `domain_peer` (default; CCF-A/B or an officially verified top venue
   in the target's field), `any_ccf_a`, or `ccf_ab`; same-domain fit is a separate mandatory gate;
 - shared comparison basis, chosen before judging winners;
@@ -62,11 +61,7 @@ For each candidate, record a relevance profile before applying the CCF gate:
 | Setting | Does it operate under a comparable data, model, feedback, or deployment regime? |
 | Evaluation | Does success mean a comparable outcome, not merely a related metric? |
 
-The default is eight ranked records including the target: select up to seven peer papers (or 15 core papers in full AC Bidding mode). Every ranked peer must pass all **four gates**:
-1. **Publication Gate**: officially accepted, peer-reviewed publication;
-2. **Venue Gate**: tier within the frozen policy (`domain_peer` by default);
-3. **Same-domain Gate**: technical and estimand proximity in the same research field;
-4. **Recency Gate (近 3 年时效性门禁)**: published within the last 3 calendar years ($\text{year} \ge \text{target\_year} - 3$). The peer set benchmarks against the current empirical and theoretical frontier; foundational or older historical works (>3 years) belong in background citations and related work, not in the active competitive comparator cohort.
+The default is eight ranked records including the target: select up to seven peer papers. Every ranked peer must pass all three gates: officially accepted/published (including verified pre-proceedings acceptance at flagship venues), venue tier within the frozen policy (`domain_peer` by default), and same-domain fit.
 
 **Stratified Comparator Cohort (Schema 3.2):** To prevent uncalibrated ranks where peers are all unassailable classics or all marginal entries, the peer set should ideally stratify across three anchor tiers when the literature supports it:
 - `sota_ceiling`: 2–3 flagship publications establishing the empirical or theoretical frontier in the field;
@@ -218,20 +213,9 @@ After all independent reviews and scores have been saved unchanged, compare ever
 Use the independent scores as a first reference, not a deterministic sort key. Scores in the same band do not establish an order. A directional relation that reverses the score order requires `score_override_reason` with concrete evidence from both papers; preserve the original scores. Do not average arbitrary dimension scores.
 
 **Same-band default and Pareto Resolution.** When a peer's score equals the target's, the default relation is `unresolved`. A direction requires `same_band_reason`: a specific verified difference on the shared basis, anchored in both papers, that the rubric band is too coarse to express.
-In Schema 3.2, when two papers exhibit orthogonal dominant strengths (e.g., Paper A achieves higher raw accuracy with $3\times$ compute, while Target achieves parity at 38% lower compute with early stopping), mark the relation `unresolved` with `decisive_factor: "Pareto co-frontier trade-off: [details]"`, or provide a verified asymmetric dominance argument under `same_band_reason` if one strictly Pareto-dominates the other across efficiency, quality, or visual presentation craftsmanship dimensions. In particular, when scientific identification rigor is tied, a demonstrably superior `presentation_band` (execution rigor and layout credibility) serves as a valid verified differentiator under `same_band_reason`.
+In Schema 3.2, when two papers exhibit orthogonal dominant strengths (e.g., Paper A achieves higher raw accuracy with $3\times$ compute, while Target achieves parity at 38% lower compute with early stopping), mark the relation `unresolved` with `decisive_factor: "Pareto co-frontier trade-off: [details]"`, or provide a verified asymmetric dominance argument under `same_band_reason` if one strictly Pareto-dominates the other across both efficiency and quality dimensions. This grounds unresolved relations in tangible system trade-offs rather than ambiguous noise.
 
 Use `unresolved` for indistinguishable evidence, competing strengths without a justified priority, or a material verification gap. Keep relevant unresolved peers in the core instead of excluding inconvenient comparisons. Waived records are always unresolved. Use `adjacent_papers` for papers without a defensible shared basis and explain the exclusion.
-
-**Dual-Axis Adjudication and Hard Gates (Schema 3.3).** Peer review adjudication operates across two orthogonal axes:
-1. **Internal Soundness & Compliance Axis (The Floor):**
-   - **Hard Gates Layer (`hard_gates`):** Checks non-negotiable compliance before ranking. Anonymity leakage (e.g. personal GitHub URLs in data availability), out-of-scope submission, or ethical violations trigger an immediate hard gate veto (`hard_gate_vetoed: true`). Vetoed manuscripts are segregated from the valid comparative interval.
-   - **Internal Consistency Audit (`internal_consistency`):** Recomputes key tables (Table 1/2 arithmetic and cost accounting) and aligns headline claims against all internal comparator and ablation arms. Flaws are categorized into 8 clusters:
-     - `A (Internal Contradiction)`: Headline claims contradicted by table numbers or hidden ablation arms. **Individually fatal**; blocks top-tier placement regardless of external SOTA novelty.
-     - `B (Missing Isolating Baseline)`: Fatal only when an explicit mechanism-isolating arm is defined but omitted.
-     - `C (Anonymity/Compliance)`: Hard-gate fatal.
-     - `D (Generalization Limits)`, `E (Inferential Deficits)`, `F (Artifact Gap)`, `G (Unreal Environment)`, `H (Unproven Cost)`: Qualitative penalty items.
-2. **External Frontier Axis (The Ceiling):**
-   Once internal soundness holds, evaluate relative position against the 3-year accepted peer cohort (`above`, `below`, `unresolved`). External ranking never pardons internal self-contradiction.
 
 The target uses `relation_to_target: "self"`. Compute:
 
@@ -246,42 +230,30 @@ When `low < high`, set `our_paper_rank` and every paper's `rank` to null and set
 
 ### 4.1 Shared quality rubric for independent reviews
 
-Rubric version: `4.2-r1`. Record it as `run.rubric_version`; any wording change to this table bumps the version and invalidates reuse of earlier reviews. Freeze this rubric before dispatch and apply it to every paper's own scientific claims. Scores are ordinal quality bands, not equal-interval measurements or conference review ratings. Use integer levels (1..10); no decimal precision, preset score distribution, or target-specific cap.
+Rubric version: `4.1-r1`. Record it as `run.rubric_version`; any wording change to this table bumps the version and invalidates reuse of earlier reviews. Freeze this rubric before dispatch and apply it to every paper's own scientific claims. Scores are ordinal quality bands, not equal-interval measurements or conference review ratings. Use integer levels; no decimal precision, preset score distribution, or target-specific cap.
 
-| Score | Level Name | Evidence needed for the level |
-|---|---|---|
-| 1 | Fatal Defect / Contradicted | The central claim is contradicted by verified evidence, or a demonstrated fatal flaw (such as Cluster A internal contradiction or unrecoverable validity breach) defeats the primary contribution. |
-| 2 | Severe Deficit | An interesting premise or problem setup, but missing multiple foundational baselines, essential proofs, or critical controls; alternative explanations easily defeat the main claims. |
-| 3 | Clear Reject | Preliminary or suggestive results exist, but at least one essential control, ablation, fair baseline comparison, or statistical measurement needed for the central claim is absent. Leaves major alternatives open. |
-| 4 | Borderline Reject | A bounded technique or empirical result is shown, but material identification weaknesses, narrow evaluation, significant leakages, or unaddressed plausible confounders prevent confidence in the findings. |
-| 5 | Borderline Accept | A useful, marginally supported contribution with clear bounds. Meets minimal standards of scientific integrity, but limited in depth, robustness, or generalization scope; incremental advance over existing baselines. |
-| 6 | Weak Accept (Standard Accepted) | A clear, sound, and verified contribution. Methodology is sound, standard baselines and controls are present, and the central claim is supported within its stated scope, though scope or impact remains moderate. |
-| 7 | Clear Accept | A well-executed, substantial contribution. The central claims are convincingly supported by rigorous experiments or solid proofs; all primary alternative explanations are anticipated and addressed by appropriate ablations or controls. |
-| 8 | Strong Accept (High Quality) | A rigorous, comprehensive, and high-impact contribution. Exceptional depth in identification and validation, thoroughly establishing superiority or novel insight across diverse benchmarks or theoretical frontiers. |
-| 9 | Top-Tier / Oral Caliber | An unusually consequential advance combining deep scientific novelty, exemplary experimental/theoretical rigor, and broad utility; withstands the most stringent adversarial critique and ablation scrutiny. |
-| 10 | Landmark / Paradigm Shift | Groundbreaking contribution of historic or field-defining significance, introducing foundational mechanisms or solving long-standing open challenges with flawless execution (Best Paper caliber). |
+| Score | Evidence needed for the level |
+|---|---|
+| 1 | The central claim is contradicted, or a demonstrated validity defect defeats the main contribution. Name the evidence; unfamiliarity or missing access alone does not justify 1. |
+| 2 | An interesting premise or preliminary result exists, but an essential proof, control, or measurement needed for the central claim is missing. Explain the alternative it leaves open. |
+| 3 | A bounded contribution is supported and useful, but material limitations in identification, robustness, or significance prevent a convincing stronger contribution. |
+| 4 | A clear, substantial contribution is convincingly supported within its stated scope; the strongest material alternatives are addressed by appropriate evidence or argument. |
+| 5 | An unusually consequential contribution combines exceptional insight or utility with compelling evidence that survives the strongest relevant challenges. State why it exceeds level 4. |
 
-Use the highest level whose requirements the observed evidence supports, and record uncertainty in `confidence`. A central missing control cannot be compensated by polished writing, a novel name, or many unrelated experiments. Strong proofs or a decisive narrow experiment can suffice when appropriate to the claim; dataset count, model size, recency, and reputation do not mechanically raise the level. A score of 10 is allowed when justified; neither high scores nor low scores are quotas.
+Use the highest level whose requirements the observed evidence supports, and record uncertainty in `confidence`. A central missing control cannot be compensated by polished writing, a novel name, or many unrelated experiments. Strong proofs or a decisive narrow experiment can suffice when appropriate to the claim; dataset count, model size, recency, and reputation do not mechanically raise the level. A score of 5 is allowed when justified; neither high scores nor low scores are quotas.
 
-Each reader returns `independent_review` with `reviewer_id`, a claim/evidence `summary`, anchored `strengths` and `weaknesses`, `score`, `score_rationale` (why this level is earned), and `next_level_requirement` (what prevents the next level). At 10, the last field explains why 10 rather than 9 is justified and names remaining limits.
+Each reader returns `independent_review` with `reviewer_id`, a claim/evidence `summary`, anchored `strengths` and `weaknesses`, `score`, `score_rationale` (why this level is earned), and `next_level_requirement` (what prevents the next level). At 5, the last field explains why 5 rather than 4 is justified and names remaining limits.
 
-**Multi-Dimensional Value Profile (Schema 3.2):** To decouple conceptual breakthrough from empirical defense depth and craftsmanship, readers optionally return three orthogonal 1–5 diagnostic bands:
+**Multi-Dimensional Value Profile (Schema 3.2):** To decouple conceptual breakthrough from empirical defense depth, readers optionally return two orthogonal 1–5 diagnostic bands:
 - `novelty_band` (1–5): Evaluates problem ambition and conceptual originality (1: trivial increment, 3: useful new module/insight, 5: groundbreaking paradigm shift);
-- `practical_impact_band` (1–5): Evaluates systems utility, efficiency dividend, or commercial deployability (1: purely synthetic/toy, 3: clear bounded practical utility, 5: decisive orders-of-magnitude systems breakthrough);
-- `presentation_band` (1–5): Evaluates visual presentation craftsmanship, figure storytelling, table rigor, and layout discipline (representing ~15%–20% weight in peer review first impressions):
-  1. *Crude / Amateur (1)*: Missing teaser; pixelated raster screenshots; tables with vertical lines (`|c|c|`); glaring overflows/widows/orphans or broken layout.
-  2. *Marginal / Draft (2)*: Basic structure present but unpolished; default raw matplotlib/jet colormaps; unaligned table decimals; significant blank space on final page.
-  3. *Standard Accepted (3)*: Clean publication-grade layout; vector PDF diagrams; standard `booktabs` three-line tables; tight page budgeting ($\ge 95\%$ fill); clear visual flow.
-  4. *Polished / Flagship-like (4)*: High-concept, self-contained Page-1 teaser figure; coherent academic color palette (Okabe-Ito/Paul Tol); champion tables with standard errors ($\pm \text{std}$) and bolded SOTA highlights; impeccable float rhythm.
-  5. *Showcase / Artifact-level (5)*: Flawless visual storytelling (the core contribution can be deduced purely from figures and tables); exhibition-grade vector infographics matching top-tier flagship papers (Nature/ICLR spotlight caliber).
-
-The primary `score` remains the governing index for ordinal ranking, while `novelty_band`, `practical_impact_band`, and `presentation_band` populate the multidimensional radar in `review.md`. An inaccessible or partially read paper has `independent_review: null`, not an invented score.
+- `practical_impact_band` (1–5): Evaluates systems utility, efficiency dividend, or commercial deployability (1: purely synthetic/toy, 3: clear bounded practical utility, 5: decisive orders-of-magnitude systems breakthrough).
+The primary `score` remains the governing index for ordinal ranking, while `novelty_band` and `practical_impact_band` populate the multidimensional radar in `review.md`. An inaccessible or partially read paper has `independent_review: null`, not an invented score.
 
 Store each returned profile before synthesis and keep the reader identity in the dispatch log. If a reader made a material factual error, use the single same-reader follow-up allowed by §3.2, preserving both versions and the reason. If that follow-up was already used or is unavailable, retain and disclose the unresolved issue rather than dispatching another reviewer. The coordinator must not rewrite scores to fit the desired ranking.
 
 ### 4.2 Comparison-only boundary
 
-Do not emit `acceptance_bar`, acceptance probabilities, or rate-derived thresholds. A selected set of published neighbors supplies neither a submission-population distribution nor a calibrated acceptance model. The shared 1–10 quality bands are not a conversion to ICLR or other conference ratings. A conference recommendation, if explicitly requested, is a separate review task.
+Do not emit `acceptance_bar`, acceptance probabilities, or rate-derived thresholds. A selected set of published neighbors supplies neither a submission-population distribution nor a calibrated acceptance model. The shared 1–5 quality bands are not a conversion to ICLR or other conference ratings. A conference recommendation, if explicitly requested, is a separate review task.
 
 Schema 3.x replaced the old acceptance-rate conversion with independent anchored reviews; 3.1 adds peer-set carry-forward, review reuse, and the same-band rule. Preserve historical runs as historical artifacts; a new assessment needs a new run directory and current evidence, not a schema relabel.
 
@@ -348,7 +320,7 @@ Write valid UTF-8 JSON with this shape. The field names and enum values are part
       "dispatched_on": "YYYY-MM-DD"
     },
     "rank_interval": null,
-    "rubric_version": "4.2-r1",
+    "rubric_version": "4.1-r1",
     "peer_set": {
       "mode": "fresh_search|carried_forward",
       "previous_run": "../<previous-run-dir> or null",
@@ -397,11 +369,11 @@ Write valid UTF-8 JSON with this shape. The field names and enum values are part
         "summary": "Claim and demonstrated contribution",
         "strengths": ["Strength with source anchor"],
         "weaknesses": ["Material limitation with source anchor"],
-        "score": 7,
+        "score": 3,
         "novelty_band": "optional integer 1..5 (Schema 3.2)",
         "practical_impact_band": "optional integer 1..5 (Schema 3.2)",
         "score_rationale": "Why the observed evidence earns this level",
-        "next_level_requirement": "What prevents the next level; for 10 explain why above 9",
+        "next_level_requirement": "What prevents the next level; for 5 explain why above 4",
         "reused_from": "optional, peers only: {run, reviewed_on, rubric_version}"
       },
       "score_override_reason": "Only required when the relation reverses the independent score order",

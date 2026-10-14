@@ -50,15 +50,6 @@ PROFILE QUESTIONS
 - limitations: what does the paper itself concede? Which limitations threaten its claim, and which are deliberate scope choices? Do not penalize a paper for not solving an unstated application.
 - alternatives: what is the strongest explanation other than the paper's own, and is it
   excluded by the design or merely unmentioned?
-- presentation: how is the visual presentation, figure storytelling, table craftsmanship, and layout execution? Does Page 1 offer a self-contained teaser/architecture figure? Do tables follow booktabs without vertical lines? Are figures vector quality with coherent palette? Is the layout tightly budgeted without orphan gaps?
-- internal_consistency:
-  1. table_recomputation: recompute at least one key table row/column/metric (e.g. Table 1 or 2). Check if arithmetic, percentages, and cost accounting (Tokens / Latency / GPU hours / Memory) hold without unexplained anomalies.
-  2. claim_vs_baseline_alignment: compare headline claims from Abstract/Intro (e.g. "higher accuracy at lower cost") against every comparator arm in tables and ablations. Does any baseline or ablation branch outperform the proposed method unexpectedly? Does token/compute cost contradict the efficiency claim?
-  3. fatal_flaw_cluster: classify any critical defect into 8 clusters: A (Internal Contradiction/Misattribution), B (Missing Isolating Baseline), C (Anonymity/Compliance), D (Generalization Limits), E (Inferential Deficit), F (Artifact Gap), G (Unreal Environment), H (Unproven Cost). Note: A-cluster flaws are individually fatal.
-- hard_gates:
-  1. anonymity: does the paper leak author identity or institutional affiliation in text, acknowledgments, PDF metadata, or data/code availability links (e.g. personal GitHub URLs)?
-  2. scope: does the paper fall within the hard subject scope of the target conference?
-  3. fatal_violations: list concrete hard gate violations; empty list if compliant.
 - relation_material: the strongest demonstrated contribution, its strongest evidence, and the most consequential unresolved alternative. Apply the same evidential scrutiny to each.
 
 OUTPUT (strict JSON, then <=200 words of prose)
@@ -74,20 +65,7 @@ OUTPUT (strict JSON, then <=200 words of prose)
     "blocked_by": "<paywall, no PDF, only abstract page, ... when mode is not full_text>"
   },
   "claim": "...", "identification": "...", "scope": "...",
-  "limitations": "...", "alternatives": "...",
-  "internal_consistency": {
-    "table_recomputed": "<Table X row/col recomputed and outcome>",
-    "claim_vs_baseline_alignment": "<headline claim vs comparator numbers>",
-    "contradiction_found": false,
-    "fatal_flaw_cluster": null,
-    "details": "<concrete evidence or 'self-consistent'>"
-  },
-  "hard_gates": {
-    "anonymity_preserved": true,
-    "scope_compliant": true,
-    "fatal_violations": []
-  },
-  "relation_material": "...",
+  "limitations": "...", "alternatives": "...", "relation_material": "...",
   "anchors": [
     {"locator": "Section 4.2 / Table 2", "quote": "<=30 words verbatim", "supports": "identification"}
   ],
@@ -97,12 +75,11 @@ OUTPUT (strict JSON, then <=200 words of prose)
       "summary": "<claim versus established contribution>",
       "strengths": ["<strength and source anchor>"],
       "weaknesses": ["<material limitation and source anchor>"],
-      "score": "<integer 1..10 from the shared rubric: defense/identification rigor>",
+      "score": "<integer 1..5 from the shared rubric: defense/identification rigor>",
       "novelty_band": "<optional integer 1..5: problem ambition and conceptual originality>",
       "practical_impact_band": "<optional integer 1..5: systems utility and economic dividend>",
-      "presentation_band": "<optional integer 1..5: visual presentation, layout craftsmanship, and table rigor>",
       "score_rationale": "<evidence that earns this level>",
-      "next_level_requirement": "<what prevents the next level; at 10 why it exceeds 9>"
+      "next_level_requirement": "<what prevents the next level; at 5 why it exceeds 4>"
     }
   }
 
@@ -127,13 +104,7 @@ RULES
 - Copies `obtained` into `reading` (`mode`, `full_text_url`, `obtained_via`, plus
   `read_by: "subagent"`, `coverage_note`, `anchors`, `could_not_verify`). Copy
   `independent_review` separately without changing its score or justification.
-- Preserves `internal_consistency` and `hard_gates` in the paper record.
-  If `hard_gates.anonymity_preserved == false` or `hard_gates.fatal_violations` is non-empty,
-  mark the paper `hard_gate_vetoed: true`; a vetoed paper receives a fatal veto ticket and
-  is segregated from clean peer intervals.
-  If `internal_consistency.contradiction_found == true` with an A-cluster flaw, record it as a
-  fatal flaw, blocking top-tier placement regardless of external novelty.
-- Uses `identification`, `scope`, `limitations`, `internal_consistency` and `alternatives` when writing the
+- Uses `identification`, `scope`, `limitations` and `alternatives` when writing the
   `decisive_factor` and the justification paragraph, and cites at least one anchor in
   `review.md`.
 - Writes directional relations only from full-text reviews. A waived record remains
