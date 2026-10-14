@@ -13,7 +13,7 @@ import unittest
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).with_name("validate_ranking.py")
+SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "validate_ranking.py"
 
 
 def load_module():
@@ -342,7 +342,9 @@ class IndependentReviewTests(unittest.TestCase):
                 run["papers"][index]["independent_review"] = None
                 self.assertIn("independent_review_missing", failure_codes(load_module().validate(run)))
         run = compliant_run()
-        run["papers"][3]["independent_review"]["score"] = 6
+        run["papers"][3]["independent_review"]["score"] = 11
+        self.assertIn("review_score_invalid", failure_codes(load_module().validate(run)))
+        run["papers"][3]["independent_review"]["score"] = 0
         self.assertIn("review_score_invalid", failure_codes(load_module().validate(run)))
         run["papers"][3]["independent_review"]["score"] = 3
         run["papers"][3]["independent_review"]["next_level_requirement"] = ""
@@ -723,6 +725,7 @@ class Schema32Tests(unittest.TestCase):
         # Test optional novelty and practical impact bands
         run["papers"][0]["independent_review"]["novelty_band"] = 5
         run["papers"][0]["independent_review"]["practical_impact_band"] = 4
+        run["papers"][0]["independent_review"]["presentation_band"] = 4
         
         report = load_module().validate(run)
         self.assertEqual(report["decision"], "PASS", report.get("failures"))
@@ -734,6 +737,102 @@ class Schema32Tests(unittest.TestCase):
         report = load_module().validate(run)
         self.assertEqual(report["decision"], "FAIL")
         self.assertTrue(any(f["code"] == "novelty_band_invalid" for f in report["failures"]))
+
+    def test_invalid_presentation_band_fails(self):
+        run = copy.deepcopy(compliant_run())
+        run["schema_version"] = "3.2"
+        run["papers"][0]["independent_review"]["presentation_band"] = 6
+        report = load_module().validate(run)
+        self.assertEqual(report["decision"], "FAIL")
+        self.assertTrue(any(f["code"] == "presentation_band_invalid" for f in report["failures"]))
+
+    def test_recency_gate_fails_for_older_papers(self):
+        run = copy.deepcopy(compliant_run())
+        # Target is 2027; 2023 is > 3 years older than target
+        run["papers"][1]["year"] = 2023
+        report = load_module().validate(run)
+        self.assertEqual(report["decision"], "FAIL")
+        self.assertTrue(any(f["code"] == "recency_gate_failed" for f in report["failures"]))
+
+    def test_schema_3_3_compliant_run(self):
+        run = copy.deepcopy(compliant_run())
+        run["schema_version"] = "3.3"
+        for p in run["papers"]:
+            p["hard_gates"] = {
+                "anonymity_preserved": True,
+                "scope_compliant": True,
+                "fatal_violations": [],
+            }
+        target = next(p for p in run["papers"] if p.get("kind") == "target")
+        target["independent_review"]["internal_consistency"] = {
+            "table_recomputed": "Table 1 accuracy and latency verified consistent.",
+            "claim_vs_baseline_alignment": "Headline throughput improvement aligned with 38% token reduction in Table 2.",
+            "contradiction_found": False,
+            "fatal_flaw_cluster": None,
+        }
+        report = load_module().validate(run)
+        self.assertEqual(report["decision"], "PASS", report.get("failures"))
+
+    def test_hard_gate_anonymity_violation_unmarked_fails(self):
+        run = copy.deepcopy(compliant_run())
+        run["schema_version"] = "3.3"
+        target = next(p for p in run["papers"] if p.get("kind") == "target")
+        target["hard_gates"] = {
+            "anonymity_preserved": False,
+            "scope_compliant": True,
+            "fatal_violations": ["Personal GitHub repo linked in Data Availability."],
+        }
+        report = load_module().validate(run)
+        self.assertEqual(report["decision"], "FAIL")
+        self.assertTrue(any(f["code"] == "target_veto_unmarked" for f in report["failures"]))
+
+    def test_hard_gate_vetoed_target_with_ranks_fails(self):
+        run = copy.deepcopy(compliant_run())
+        run["schema_version"] = "3.3"
+        target = next(p for p in run["papers"] if p.get("kind") == "target")
+        target["hard_gate_vetoed"] = True
+        target["hard_gates"] = {
+            "anonymity_preserved": False,
+            "scope_compliant": True,
+            "fatal_violations": ["Personal GitHub URL exposed."],
+        }
+        # Still carries numerical rank 4
+        report = load_module().validate(run)
+        self.assertEqual(report["decision"], "FAIL")
+        self.assertTrue(any(f["code"] == "vetoed_target_ranked" for f in report["failures"]))
+
+    def test_hard_gate_vetoed_target_null_ranks_passes(self):
+        run = copy.deepcopy(compliant_run())
+        run["schema_version"] = "3.3"
+        target = next(p for p in run["papers"] if p.get("kind") == "target")
+        target["hard_gate_vetoed"] = True
+        target["hard_gates"] = {
+            "anonymity_preserved": False,
+            "scope_compliant": True,
+            "fatal_violations": ["Personal GitHub URL exposed."],
+        }
+        target["rank"] = None
+        run["our_paper_rank"] = None
+        for p in run["papers"]:
+            p["rank"] = None
+        run["run"]["rank_interval"] = None
+        report = load_module().validate(run)
+        self.assertEqual(report["decision"], "PASS", report.get("failures"))
+
+    def test_fatal_contradiction_cluster_a_scored_high_fails(self):
+        run = copy.deepcopy(compliant_run())
+        run["schema_version"] = "3.3"
+        target = next(p for p in run["papers"] if p.get("kind") == "target")
+        target["independent_review"]["score"] = 7
+        target["independent_review"]["internal_consistency"] = {
+            "table_recomputed": "Table 1 shows 48M vs 38M tokens.",
+            "claim_vs_baseline_alignment": "Claim of efficiency contradicted by higher token usage.",
+            "contradiction_found": True,
+            "fatal_flaw_cluster": "A",
+        }
+        report = load_module().validate(run)
+        self.assertEqual(report["decision"], "FAIL")
+        self.assertTrue(any(f["code"] == "fatal_contradiction_scored_high" for f in report["failures"]))
 
 
 if __name__ == "__main__":

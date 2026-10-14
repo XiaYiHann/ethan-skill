@@ -1,0 +1,16 @@
+interface:
+  display_name: "Rank My Paper Benchmarking"
+  short_description: "Benchmark a completed manuscript against same-domain accepted peers via AC bidding."
+  default_prompt: "Benchmark this completed manuscript against same-domain accepted peers via AC bidding."
+  parameters:
+    manuscript_path: {type: string, required: true, description: "Manuscript path."}
+    venue_policy: {type: string, default: "domain_peer", description: "Venue stratum."}
+    target_papers: {type: integer, default: 8, description: "Target papers."}
+    reviewers_count: {type: integer, default: 10, description: "Reviewer count."}
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets: [openai, claude, generic, vscode, agent-skills]
+  activation: {mode: manual, paths: []}
+  execution: {context: inline, shell: bash}
+  trust: {source_tier: local, remote_inline_execution: forbid, remote_metadata_policy: allow-metadata-only}
+  degradation: {openai: metadata-adapter, claude: neutral-source-plus-adapter, generic: neutral-source, vscode: agent-skills-source-with-vscode-notes, agent-skills: canonical-agent-skills}

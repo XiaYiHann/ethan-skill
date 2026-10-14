@@ -2,6 +2,12 @@
 
 Notable changes to the skills in this repo. Versions track `.claude-plugin/plugin.json`.
 
+## 0.4.0
+
+### Changed
+
+- Replace `rank-my-paper` with the locally maintained v3.4.0 skill, including its references, scripts, tests, and metadata.
+
 ## 0.3.0
 
 ### Added

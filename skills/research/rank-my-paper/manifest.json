@@ -1,0 +1,14 @@
+{
+  "name": "rank-my-paper",
+  "version": "3.4.0",
+  "owner": "ResearchLoop Maintainers",
+  "updated_at": "2026-10-13",
+  "review_cadence": "quarterly",
+  "status": "active",
+  "maturity_tier": "governed",
+  "lifecycle_stage": "production",
+  "context_budget_tier": "governed",
+  "skill_ir_source": "reports/skill-ir.json",
+  "target_platforms": ["openai", "claude", "agent-skills", "vscode", "generic"],
+  "factory_components": ["agents", "references", "scripts", "tests", "reports", "evals"]
+}

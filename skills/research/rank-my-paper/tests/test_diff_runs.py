@@ -12,7 +12,8 @@ from test_validate_ranking import compliant_run
 
 
 def load(name):
-    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(f"{name}.py"))
+    script_path = Path(__file__).resolve().parent.parent / "scripts" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, script_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

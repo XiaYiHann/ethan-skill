@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-10-12T13:10:00+08:00",
+  "eval_version": "2.0.0",
+  "baseline_run": {
+    "total_cases": 70,
+    "passed": 70,
+    "failed": 0,
+    "scenarios": [
+      "test_affinity_calculation",
+      "test_round1_coarse_bidding",
+      "test_round2_bipartite_assignment",
+      "test_validate_ranking_suite",
+      "test_diff_runs_suite"
+    ]
+  }
+}

@@ -12,6 +12,9 @@ import json
 import sys
 from pathlib import Path
 
+SCRIPT_INTERFACE = "cli"
+SCRIPT_INTERFACE_REASON = "CLI diff utility comparing consecutive rank-my-paper runs."
+
 
 def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))

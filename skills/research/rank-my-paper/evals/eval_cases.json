@@ -1,0 +1,20 @@
+{
+  "eval_version": "2.0.0",
+  "cases": [
+    {
+      "id": "ac_two_round_bidding_assignment",
+      "description": "Select 15 papers from candidate pool and assign across 10 reviewers with quota capacity constraints",
+      "expected_status": "pass"
+    },
+    {
+      "id": "validate_ranking_contract_schema_32",
+      "description": "Verify compliant ranking.json with stratified anchor cohorts and anchor citations passes validation",
+      "expected_status": "pass"
+    },
+    {
+      "id": "detect_rank_inconsistency",
+      "description": "Detect inconsistency between declared pairwise relations and numerical rank positions",
+      "expected_status": "pass"
+    }
+  ]
+}

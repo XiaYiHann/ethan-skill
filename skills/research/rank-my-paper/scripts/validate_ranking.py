@@ -12,9 +12,13 @@ import re
 import sys
 from pathlib import Path
 
-SUPPORTED_SCHEMAS = {"3.1", "3.2"}
-SUPPORTED_SCHEMA = "3.2"
+SCRIPT_INTERFACE = "cli"
+SCRIPT_INTERFACE_REASON = "CLI validation engine certifying ranking.json output contracts."
+
+SUPPORTED_SCHEMAS = {"3.1", "3.2", "3.3"}
+SUPPORTED_SCHEMA = "3.3"
 PEER_SET_MODES = {"fresh_search", "carried_forward"}
+FATAL_FLAW_CLUSTERS = {"A", "B", "C", "D", "E", "F", "G", "H"}
 
 CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
 MAX_CONFIDENCE_BY_EVIDENCE = {
@@ -155,7 +159,13 @@ def _check_structural(payload: dict, run: dict, papers: list, report: _Report) -
     ranks = [p.get("rank") for p in papers]
     n = len(papers)
     unresolved = any(p.get("relation_to_target") == "unresolved" for p in papers)
-    if unresolved:
+    target_vetoed = bool(targets and targets[0].get("hard_gate_vetoed") is True)
+    if target_vetoed:
+        if payload.get("our_paper_rank") is not None or (targets and targets[0].get("rank") is not None):
+            report.fail("vetoed_target_ranked", "Target manuscript failed hard gates; our_paper_rank and target.rank must be null.")
+        if any(r is not None for r in ranks):
+            report.fail("vetoed_run_ranks_must_be_null", "When target is vetoed by hard gates, paper ranks must be null.")
+    elif unresolved:
         if payload.get("our_paper_rank") is not None or any(r is not None for r in ranks):
             report.fail("rank_false_precision", "Unresolved comparisons require null ranks and a target rank interval.")
     elif sorted(r for r in ranks if type(r) is int) != list(range(1, n + 1)):
@@ -472,12 +482,17 @@ def _check_reading(paper: dict, waived: set, method, report: _Report) -> None:
 
 def _check_interval(run: dict, papers: list, waived: set, report: _Report) -> tuple[int, int] | None:
     """Unresolved relations bound the target's position without forcing winners."""
+    target_vetoed = any(p.get("kind") == "target" and p.get("hard_gate_vetoed") is True for p in papers)
+    declared = run.get("rank_interval")
+    if target_vetoed:
+        if declared is not None:
+            report.fail("vetoed_interval_must_be_null", "When target is vetoed by hard gates, run.rank_interval must be null.")
+        return None
     peers = [p for p in papers if p.get("kind") != "target"]
     for paper in peers:
         if paper.get("key") in waived and paper.get("relation_to_target") != "unresolved":
             report.fail("waived_relation_resolved", "Waived papers must carry relation_to_target='unresolved'.")
     uncertain = [p for p in peers if p.get("relation_to_target") == "unresolved" or p.get("key") in waived]
-    declared = run.get("rank_interval")
     if not uncertain:
         if declared is not None:
             report.fail("rank_interval_unexpected", "Omit rank_interval (or set null) when all relations are resolved.")
@@ -652,6 +667,31 @@ def _check_provenance(paper: dict, policy: str, waived: set, report: _Report) ->
         )
 
 
+def _check_recency_gate(run: dict, papers: list, report: _Report) -> None:
+    """Core comparators must be published within the recency window (default 3 years)."""
+    targets = [p for p in papers if isinstance(p, dict) and p.get("kind") == "target"]
+    if not targets:
+        return
+    target_year = targets[0].get("year")
+    if not isinstance(target_year, int):
+        return
+    recency_window = run.get("recency_window_years", 3)
+    if not isinstance(recency_window, int):
+        recency_window = 3
+
+    for paper in papers:
+        if not isinstance(paper, dict) or paper.get("kind") == "target":
+            continue
+        peer_year = paper.get("year")
+        if isinstance(peer_year, int) and peer_year < target_year - recency_window:
+            report.fail(
+                "recency_gate_failed",
+                f"Core comparator {paper.get('key')!r} (published in {peer_year}) is outside the "
+                f"{recency_window}-year recency window relative to target year {target_year}. "
+                "Historical or foundational work belongs in background citations, not in the active competitive comparator cohort.",
+            )
+
+
 def _check_reuse(paper: dict, review: dict, rubric_version, report: _Report) -> None:
     source = review.get("reused_from")
     if source is None:
@@ -698,8 +738,8 @@ def _check_independent_reviews(papers: list, method, rubric_version, report: _Re
             if not isinstance(values, list) or not values or not all(_is_str(v) for v in values):
                 report.fail("review_evidence_missing", f"Paper {paper.get('key')!r} needs anchored {field}; state an evidence-bound absence if none were found.")
         score = review.get("score")
-        if type(score) is not int or not 1 <= score <= 5:
-            report.fail("review_score_invalid", "Independent quality scores must be integers 1..5 under the shared rubric.")
+        if type(score) is not int or not 1 <= score <= 10:
+            report.fail("review_score_invalid", "Independent quality scores must be integers 1..10 under the shared rubric.")
             continue
         # Optional multi-dimensional value bands (Schema 3.2)
         novelty_band = review.get("novelty_band")
@@ -708,6 +748,28 @@ def _check_independent_reviews(papers: list, method, rubric_version, report: _Re
         impact_band = review.get("practical_impact_band")
         if impact_band is not None and (type(impact_band) is not int or not 1 <= impact_band <= 5):
             report.fail("practical_impact_band_invalid", f"Paper {paper.get('key')!r} practical_impact_band must be an integer 1..5 if provided.")
+        presentation_band = review.get("presentation_band")
+        if presentation_band is not None and (type(presentation_band) is not int or not 1 <= presentation_band <= 5):
+            report.fail("presentation_band_invalid", f"Paper {paper.get('key')!r} presentation_band must be an integer 1..5 if provided.")
+
+        # Optional internal consistency audit (Schema 3.3)
+        consistency = review.get("internal_consistency") or paper.get("internal_consistency")
+        if consistency is not None:
+            if not isinstance(consistency, dict):
+                report.fail("internal_consistency_invalid", f"Paper {paper.get('key')!r} internal_consistency must be an object.")
+            else:
+                for req_field in ("table_recomputed", "claim_vs_baseline_alignment"):
+                    if not _is_str(consistency.get(req_field)):
+                        report.fail("consistency_audit_missing", f"Paper {paper.get('key')!r} internal_consistency.{req_field} must be a non-empty string.")
+                contra = consistency.get("contradiction_found")
+                if not isinstance(contra, bool):
+                    report.fail("contradiction_found_invalid", f"Paper {paper.get('key')!r} internal_consistency.contradiction_found must be a boolean.")
+                cluster = consistency.get("fatal_flaw_cluster")
+                if cluster is not None and cluster not in FATAL_FLAW_CLUSTERS:
+                    report.fail("flaw_cluster_invalid", f"Paper {paper.get('key')!r} fatal_flaw_cluster must be one of {sorted(FATAL_FLAW_CLUSTERS)} or null.")
+                if contra and cluster == "A" and score >= 7 and not _is_str(review.get("contradiction_override_reason")):
+                    report.fail("fatal_contradiction_scored_high", f"Paper {paper.get('key')!r} contains fatal cluster A contradiction; score cannot be >=7 without contradiction_override_reason.")
+
         relation = paper.get("relation_to_target")
         if type(target_score) is int and (
             (relation == "above" and score < target_score)
@@ -724,6 +786,36 @@ def _check_independent_reviews(papers: list, method, rubric_version, report: _Re
                 )
     if same_band:
         report.note(f"Directional relations within the target's score band: {same_band}.")
+
+
+def _check_hard_gates(paper: dict, report: _Report) -> None:
+    """Verify non-negotiable compliance gates (Schema 3.3)."""
+    hard_gates = paper.get("hard_gates")
+    if hard_gates is None:
+        return
+    if not isinstance(hard_gates, dict):
+        report.fail("hard_gates_invalid", f"Paper {paper.get('key')!r} hard_gates must be an object if provided.")
+        return
+    anonymity = hard_gates.get("anonymity_preserved")
+    if not isinstance(anonymity, bool):
+        report.fail("anonymity_gate_invalid", f"Paper {paper.get('key')!r} hard_gates.anonymity_preserved must be a boolean.")
+    scope = hard_gates.get("scope_compliant")
+    if not isinstance(scope, bool):
+        report.fail("scope_gate_invalid", f"Paper {paper.get('key')!r} hard_gates.scope_compliant must be a boolean.")
+    fatal_violations = hard_gates.get("fatal_violations")
+    if not isinstance(fatal_violations, list) or not all(_is_str(v) for v in fatal_violations):
+        report.fail("fatal_violations_invalid", f"Paper {paper.get('key')!r} hard_gates.fatal_violations must be a list of non-empty strings.")
+
+    is_vetoed = (anonymity is False) or (scope is False) or (bool(fatal_violations))
+    if is_vetoed:
+        if paper.get("kind") == "target":
+            if paper.get("hard_gate_vetoed") is not True:
+                report.fail("target_veto_unmarked", "Target manuscript violates hard gates but is not marked hard_gate_vetoed=true.")
+            if paper.get("rank") is not None:
+                report.fail("vetoed_target_ranked", "Target manuscript failed hard gates; its numerical rank must be null.")
+        else:
+            if paper.get("hard_gate_vetoed") is not True:
+                report.fail("peer_veto_unmarked", f"Peer {paper.get('key')!r} violates hard gates but is not marked hard_gate_vetoed=true.")
 
 
 def validate(payload: dict) -> dict:
@@ -769,7 +861,9 @@ def validate(payload: dict) -> dict:
         _check_reading(paper, waived, reading_policy.get("dispatch_method"), report)
         _check_evidence(paper, report)
         _check_provenance(paper, policy, waived, report)
+        _check_hard_gates(paper, report)
 
+    _check_recency_gate(run, papers, report)
     _check_independent_reviews(papers, reading_policy.get("dispatch_method"), run.get("rubric_version"), report)
     interval = _check_interval(run, papers, waived, report)
 

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "reviewed_at": "2026-10-12",
+  "capabilities": {
+    "file_write": {
+      "decision": "approved",
+      "reviewer": "Research Loop Team",
+      "scope": "Writing review.md, ranking.json, sources.md, and bidding assignments strictly under <manuscript>/rank_my_paper/.",
+      "reason": "File writing is strictly bounded to the isolated rank_my_paper directory without altering the manuscript, code, or bibliography.",
+      "expires_at": "2027-10-12",
+      "evidence": [
+        "reports/security_trust_report.md",
+        "scripts/validate_ranking.py",
+        "scripts/bidding_assigner.py"
+      ],
+      "target_enforcement": {
+        "openai": "metadata-adapter",
+        "claude": "neutral-source-plus-adapter",
+        "generic": "neutral-source",
+        "vscode": "agent-skills-source-with-vscode-notes"
+      }
+    },
+    "subprocess": {
+      "decision": "approved",
+      "reviewer": "Research Loop Team",
+      "scope": "Executing deterministic Python validation scripts (validate_ranking.py, bidding_assigner.py, diff_runs.py).",
+      "reason": "Subprocess execution is required for contract validation, diff comparisons, and two-round bipartite matching solver execution.",
+      "expires_at": "2027-10-12",
+      "evidence": [
+        "reports/security_trust_report.md",
+        "scripts/validate_ranking.py",
+        "scripts/bidding_assigner.py"
+      ],
+      "target_enforcement": {
+        "openai": "metadata-adapter",
+        "claude": "neutral-source-plus-adapter",
+        "generic": "neutral-source",
+        "vscode": "agent-skills-source-with-vscode-notes"
+      }
+    }
+  }
+}
